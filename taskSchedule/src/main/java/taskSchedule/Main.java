@@ -1,18 +1,9 @@
 package taskSchedule;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -23,7 +14,6 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 
 public class Main extends Application {
@@ -32,7 +22,7 @@ public class Main extends Application {
 	public static void main(String[] args) {
 		launch(args);
 	}
- ///
+ 
 	@Override
 	public void start(Stage stage) {
 
@@ -57,11 +47,12 @@ public class Main extends Application {
 
 				taskTable.getItems().add(new TaskModel(titleText.getText(), descriptionText.getText(),
 						LocalDateTime.now().format(formatter).toString(), 0));
+				taskTable.saveData();
 				titleText.clear();
 				descriptionText.clear();
 			}
 		});
-		final Button deleteButton = new Button("Delete");
+		final Button deleteButton = new Button("Delete"); //TODO add shortcut and menu 
 		deleteButton.setStyle("-fx-background-color: red");
 		deleteButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override

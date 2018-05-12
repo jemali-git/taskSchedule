@@ -18,7 +18,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.DataFormat;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -39,7 +38,7 @@ public class TaskTable extends TableView<TaskModel> {
 				((TaskModel) t.getTableView().getItems().get(t.getTablePosition().getRow())).setTitle(t.getNewValue());
 			}
 		});
-
+		// TODO crtl+n new row
 		sceneProperty().addListener((obs, oldScene, newScene) -> {
 			if (newScene != null) {
 				newScene.getAccelerators().put(new KeyCodeCombination(KeyCode.C, KeyCombination.CONTROL_ANY),
@@ -58,6 +57,12 @@ public class TaskTable extends TableView<TaskModel> {
 								System.out.println(getSelectionModel().getSelectedItems().size());
 							}
 						});
+				newScene.getAccelerators().put(new KeyCodeCombination(KeyCode.DELETE), new Runnable() {
+					@Override
+					public void run() {
+						getItems().removeAll(getSelectionModel().getSelectedItems());
+					}
+				});
 			}
 		});
 
@@ -128,19 +133,13 @@ public class TaskTable extends TableView<TaskModel> {
 	}
 
 	public void loadData() {
-
 		try {
 			FileInputStream fileInputStream;
 			fileInputStream = new FileInputStream("data.task");
 			ObjectInputStream ois = new ObjectInputStream(fileInputStream);
 			List<Map> dataList = (List<Map>) ois.readObject();
-
 			dataList.forEach(task -> {
-				String title = task.get("title").toString();
-				String description = task.get("description").toString();
-				String creationDate = task.get("creationDate").toString();
-				long totalTime = (long) task.get("totalTime");
-				getItems().add(new TaskModel(title, description, creationDate, totalTime));
+				getItems().add(TaskModel.deserialize(task));
 			});
 			ois.close();
 		} catch (Exception e) {
@@ -154,7 +153,7 @@ public class TaskTable extends TableView<TaskModel> {
 			ObjectOutputStream oos = new ObjectOutputStream(fileOutputStream);
 			List<Map> dataList = new ArrayList<>();
 			getItems().forEach(task -> {
-				dataList.add(task.getSerialization());
+				dataList.add(task.serialize());
 			});
 			oos.writeObject(dataList);
 			oos.close();

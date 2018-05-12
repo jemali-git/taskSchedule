@@ -2,93 +2,88 @@ package taskSchedule;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.time.StopWatch;
 
 import javafx.animation.Animation;
+import javafx.animation.Animation.Status;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.util.Duration;
+import javafx.util.StringConverter;
+import javafx.util.converter.NumberStringConverter;;
 
 public class TaskModel {
 
 	SimpleStringProperty title;
 	SimpleStringProperty description;
-	SimpleStringProperty time;
+	SimpleDoubleProperty time;
 	SimpleStringProperty creationDate;
 
-	long totalTime;
+	HBox actions = new HBox();
+	HBox timeView = new HBox();
 
-	TaskModel(String title, String description, String creationDate, long totalT) {
+	TaskModel(String title, String description, String creationDate, Double totalT) {
 		this.title = new SimpleStringProperty(title);
 		this.description = new SimpleStringProperty(description);
-		this.totalTime = totalT;
 		this.creationDate = new SimpleStringProperty(creationDate);
-		this.time = new SimpleStringProperty(getTextTime(this.totalTime));
+		this.time = new SimpleDoubleProperty(totalT);
 
+		Label label = new Label("");
+
+		StringConverter<Number> converter = new NumberStringConverter();
+
+		Bindings.bindBidirectional(label.textProperty(), time, converter);
+		timeView.getChildren().add(label);
+		timeView.setAlignment(Pos.CENTER);
+
+		Timeline timeline = new Timeline(new KeyFrame(Duration.ZERO, e -> {
+			time.set(time.get() + 1.0 / 3600.0);
+		}), new KeyFrame(Duration.seconds(1)));
+
+		
+		timeline.setCycleCount(Animation.INDEFINITE);
+
+		Button actionButton = new Button("Start");
+		Button resetButton = new Button("Reset");
+
+		actionButton.setStyle("-fx-background-color: #90EE90");
+		actionButton.setOnAction(event -> {
+			if (timeline.getStatus() == Status.STOPPED) {
+				actionButton.setText("Stop");
+				actionButton.setStyle("-fx-background-color: #ff8040");
+				timeline.play();
+			} else if (timeline.getStatus() == Status.RUNNING) {
+				actionButton.setText("Start");
+				actionButton.setStyle("-fx-background-color: #90EE90");
+				timeline.stop();
+			}
+		});
+		resetButton.setOnAction(event -> {
+			time.set(0);
+		});
+		actions.getChildren().addAll(actionButton, resetButton);
+		actions.setSpacing(5);
+	}
+
+	public HBox getTimeView() {
+		return timeView;
 	}
 
 	public HBox getActions() {
-		
-		StopWatch stopWatch = new StopWatch();
-		Timeline timer = new Timeline(new KeyFrame(Duration.ZERO, e -> {
-			setTime(getTextTime(this.totalTime + this.getTotalTime()));
-			Main.taskTable.getColumns().get(2).setVisible(false);
-			Main.taskTable.getColumns().get(2).setVisible(true);
-		}), new KeyFrame(Duration.seconds(1)));
-		timer.setCycleCount(Animation.INDEFINITE);
-
-		Button actionButton = new Button("Start");
-		actionButton.setStyle("-fx-background-color: #90EE90");
-
-		actionButton.setOnAction(event -> {
-			System.out.println(stopWatch.isStopped());
-			if (stopWatch.isStopped()) {
-				actionButton.setText("Stop");
-				actionButton.setStyle("-fx-background-color: #ff8040");
-				stopWatch.start();
-			} else if (stopWatch.isStarted()) {
-				actionButton.setText("Start");
-				actionButton.setStyle("-fx-background-color: #90EE90");
-				stopWatch.reset();
-			}
-		});
-
-		Button resetButton = new Button("Reset");
-		resetButton.setOnAction(event -> {
-			totalTime = 0;
-			// startTime = new Date().getTime();
-		});
-
-		HBox actions = new HBox();
-		actions = new HBox();
-		actions.getChildren().addAll(actionButton, resetButton);
-		actions.setSpacing(5);
 		return actions;
 	}
 
-	String getTextTime(long time) {
-		time = time / 1000;
-		long hours = time / (60 * 60);
-		time = time % (60 * 60);
-		long minutes = (time / 60);
-		time = time % 60;
-		long seconds = time;
-		return ("Seconds: " + seconds + " Minutes: " + minutes + " Hours: " + hours);
-	}
-
 	public Map<String, Object> serialize() {
-		// if (clock.getStatus() == Animation.Status.RUNNING) {
-		// totalTime += new Date().getTime() - startTime;
-		// }
 		Map<String, Object> map = new HashMap<>();
 		map.put("title", title.get());
 		map.put("description", description.get());
-		map.put("totalTime", totalTime);
+		map.put("totalTime", time.get());
 		map.put("creationDate", creationDate.get());
 		return map;
 	}
@@ -97,7 +92,7 @@ public class TaskModel {
 		String title = task.get("title").toString();
 		String description = task.get("description").toString();
 		String creationDate = task.get("creationDate").toString();
-		long totalTime = (long) task.get("totalTime");
+		double totalTime = (double) task.get("totalTime");
 		return new TaskModel(title, description, creationDate, totalTime);
 	}
 
@@ -117,16 +112,8 @@ public class TaskModel {
 		this.description = new SimpleStringProperty(description);
 	}
 
-	public String getTime() {
+	public double getTime() {
 		return time.get();
-	}
-
-	public void setTime(String time) {
-		this.time = new SimpleStringProperty(time);
-	}
-
-	public long getTotalTime() {
-		return totalTime;
 	}
 
 	public String getCreationDate() {
@@ -137,8 +124,13 @@ public class TaskModel {
 		this.creationDate = new SimpleStringProperty(creationDate);
 	}
 
-	public void setTotalTime(long totalTime) {
-		this.totalTime = totalTime;
-	}
-
 }
+
+// String getTextTime(long time) {
+// long hours = time / (60 * 60);
+// time = time % (60 * 60);
+// long minutes = (time / 60);
+// time = time % 60;
+// long seconds = time;
+// return ("Seconds: " + seconds + " Minutes: " + minutes + " Hours: " + hours);
+// }

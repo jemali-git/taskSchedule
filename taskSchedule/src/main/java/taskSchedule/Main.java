@@ -23,13 +23,12 @@ import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 
 public class Main extends Application {
 
 	public static TaskTable taskTable;
-	public static ObservableList<TaskModel> data;
-
 	public static void main(String[] args) {
 		launch(args);
 	}
@@ -41,10 +40,7 @@ public class Main extends Application {
 		stage.getIcons().add(new Image(getClass().getResourceAsStream("taskSchedule.png")));
 
 		taskTable = new TaskTable();
-		data = FXCollections.observableArrayList();
-		loadData();
-
-		taskTable.setItems(data);
+		taskTable.loadData();
 
 		TextField titleText = new TextField();
 		titleText.setPromptText("title");
@@ -59,7 +55,7 @@ public class Main extends Application {
 
 				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-				data.add(new TaskModel(titleText.getText(), descriptionText.getText(),
+				taskTable.getItems().add(new TaskModel(titleText.getText(), descriptionText.getText(),
 						LocalDateTime.now().format(formatter).toString(), 0));
 				titleText.clear();
 				descriptionText.clear();
@@ -70,7 +66,7 @@ public class Main extends Application {
 		deleteButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
-				data.remove(taskTable.getSelectionModel().getSelectedItem());
+				taskTable.getItems().remove(taskTable.getSelectionModel().getSelectedItem());
 			}
 		});
 
@@ -93,50 +89,6 @@ public class Main extends Application {
 				Runtime.getRuntime().exit(0);
 			}
 		});
-		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-
-			public void run() {
-				saveData();
-			}
-		}));
-
-	}
-
-	public void loadData() {
-
-		try {
-			FileInputStream fileInputStream;
-			fileInputStream = new FileInputStream("data.task");
-			ObjectInputStream ois = new ObjectInputStream(fileInputStream);
-			List<Map> dataList = (List<Map>) ois.readObject();
-
-			dataList.forEach(task -> {
-				String title = task.get("title").toString();
-				String description = task.get("description").toString();
-				String creationDate = task.get("creationDate").toString();
-				long totalTime = (long) task.get("totalTime");
-				data.add(new TaskModel(title, description, creationDate, totalTime));
-			});
-			ois.close();
-		} catch (Exception e) {
-			System.out.println(e.toString());
-		}
-	}
-
-	public void saveData() {
-		try {
-			FileOutputStream fileOutputStream = new FileOutputStream("data.task");
-			ObjectOutputStream oos = new ObjectOutputStream(fileOutputStream);
-			List<Map> dataList = new ArrayList<>();
-			data.forEach(task -> {
-				dataList.add(task.getSerialization());
-			});
-			oos.writeObject(dataList);
-			oos.close();
-
-		} catch (Exception e) {
-			System.out.println(e.toString());
-		}
 	}
 
 }

@@ -162,6 +162,7 @@ public class TaskTable extends TableView<TaskModel> {
 		});
 		setContextMenu(new ContextMenu(newRow, copyRow, deleteRow));
 	}
+
 	public void loadData() {
 		try {
 			FileInputStream fileInputStream;
@@ -202,12 +203,14 @@ public class TaskTable extends TableView<TaskModel> {
 		getItems().removeAll(getSelectionModel().getSelectedItems());
 		getSelectionModel().clearSelection();
 	}
+
 	public void copyRow() {
 		final Clipboard clipboard = Clipboard.getSystemClipboard();
 		final ClipboardContent content = new ClipboardContent();
 		StringBuilder stringBuilder = new StringBuilder();
 		getSelectionModel().getSelectedItems().forEach(taskModel -> {
-			stringBuilder.append(taskModel.title.get() + "->" + taskModel.description.get() + "\n");
+			stringBuilder.append(
+					taskModel.title.get() + "_" + taskModel.description.get() + "_" + taskModel.getTime() + "\n");
 		});
 		content.putString(stringBuilder.toString());
 		clipboard.setContent(content);

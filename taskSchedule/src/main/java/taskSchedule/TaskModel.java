@@ -3,10 +3,7 @@ package taskSchedule;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang3.time.StopWatch;
-
 import javafx.animation.Animation;
-import javafx.animation.Animation.Status;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
@@ -18,7 +15,9 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
-import javafx.util.converter.NumberStringConverter;;
+import javafx.util.converter.NumberStringConverter;
+import taskSchedule.util.StopWatch;
+import taskSchedule.util.StopWatch.TimeUnit;;
 
 public class TaskModel {
 
@@ -36,44 +35,45 @@ public class TaskModel {
 		this.creationDate = new SimpleStringProperty(creationDate);
 		this.time = new SimpleDoubleProperty(totalT);
 
-		Label label = new Label("");
-
+		Label label = new Label();
 		StringConverter<Number> converter = new NumberStringConverter();
-
 		Bindings.bindBidirectional(label.textProperty(), time, converter);
 		timeView.getChildren().add(label);
 		timeView.setAlignment(Pos.CENTER);
 
+		StopWatch stopWatch = new StopWatch(totalT, TimeUnit.HOURS);
 		Timeline timeline = new Timeline(new KeyFrame(Duration.ZERO, e -> {
-			time.set(time.get() + 1.0 / 3600.0);
-		}), new KeyFrame(Duration.seconds(1)));
+			time.set(stopWatch.getTime(StopWatch.TimeUnit.HOURS));
 
-		
+		}), new KeyFrame(Duration.seconds(1)));
 		timeline.setCycleCount(Animation.INDEFINITE);
+		timeline.play();
 
 		Button actionButton = new Button("Start");
 		Button resetButton = new Button("Reset");
 
 		actionButton.setStyle("-fx-background-color: #90EE90");
 		actionButton.setOnAction(event -> {
-			if (timeline.getStatus() == Status.STOPPED) {
+			if (stopWatch.isStopped()) {
 				actionButton.setText("Stop");
 				actionButton.setStyle("-fx-background-color: #ff8040");
-				timeline.play();
-			} else if (timeline.getStatus() == Status.RUNNING) {
+				stopWatch.start();
+			} else if (stopWatch.isStarted()) {
 				actionButton.setText("Start");
 				actionButton.setStyle("-fx-background-color: #90EE90");
-				timeline.stop();
+				stopWatch.stop();
 			}
 		});
 		resetButton.setOnAction(event -> {
-			time.set(0);
+			stopWatch.reset();
+
 		});
 		actions.getChildren().addAll(actionButton, resetButton);
 		actions.setSpacing(5);
 	}
 
 	public HBox getTimeView() {
+
 		return timeView;
 	}
 

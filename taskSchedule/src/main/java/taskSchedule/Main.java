@@ -1,5 +1,7 @@
 package taskSchedule;
 
+import java.io.InputStream;
+
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -21,8 +23,10 @@ public class Main extends Application {
 	public void start(Stage stage) {
 
 		stage.setTitle("Task Schedule");
-		stage.getIcons().add(new Image(getClass().getResourceAsStream("taskSchedule.png")));
-
+		ClassLoader classloader = Thread.currentThread().getContextClassLoader();
+		InputStream is = classloader.getResourceAsStream("taskSchedule.png");
+		stage.getIcons().add(new Image(is));	
+		
 		taskTable = new TaskTable();
 		TextField titleText = new TextField();
 		titleText.setPromptText("title");

@@ -25,6 +25,7 @@
 				<configuration>
 					<archive>
 						<manifest>
+							<!-- clean compile assembly:single -->
 							<mainClass>taskSchedule.Main</mainClass>
 						</manifest>
 					</archive>

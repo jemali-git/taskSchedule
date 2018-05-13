@@ -3,6 +3,8 @@ package taskSchedule;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.time.StopWatch;
+
 import javafx.animation.Animation;
 import javafx.animation.Animation.Status;
 import javafx.animation.KeyFrame;
@@ -83,7 +85,7 @@ public class TaskModel {
 		Map<String, Object> map = new HashMap<>();
 		map.put("title", title.get());
 		map.put("description", description.get());
-		map.put("totalTime", time.get());
+		map.put("time", time.get());
 		map.put("creationDate", creationDate.get());
 		return map;
 	}
@@ -92,7 +94,7 @@ public class TaskModel {
 		String title = task.get("title").toString();
 		String description = task.get("description").toString();
 		String creationDate = task.get("creationDate").toString();
-		double totalTime = (double) task.get("totalTime");
+		double totalTime = (double) task.get("time");
 		return new TaskModel(title, description, creationDate, totalTime);
 	}
 
@@ -125,12 +127,3 @@ public class TaskModel {
 	}
 
 }
-
-// String getTextTime(long time) {
-// long hours = time / (60 * 60);
-// time = time % (60 * 60);
-// long minutes = (time / 60);
-// time = time % 60;
-// long seconds = time;
-// return ("Seconds: " + seconds + " Minutes: " + minutes + " Hours: " + hours);
-// }

@@ -23,7 +23,6 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -152,7 +151,6 @@ public class TaskTable extends TableView<TaskModel> {
 				copyRow();
 			}
 		});
-
 		MenuItem deleteRow = new MenuItem("Delete");
 		deleteRow.setAccelerator(new KeyCodeCombination(KeyCode.DELETE));
 		deleteRow.setOnAction(new EventHandler<ActionEvent>() {
@@ -204,7 +202,6 @@ public class TaskTable extends TableView<TaskModel> {
 		getItems().removeAll(getSelectionModel().getSelectedItems());
 		getSelectionModel().clearSelection();
 	}
-
 	public void copyRow() {
 		final Clipboard clipboard = Clipboard.getSystemClipboard();
 		final ClipboardContent content = new ClipboardContent();
@@ -215,5 +212,4 @@ public class TaskTable extends TableView<TaskModel> {
 		content.putString(stringBuilder.toString());
 		clipboard.setContent(content);
 	}
-
 }

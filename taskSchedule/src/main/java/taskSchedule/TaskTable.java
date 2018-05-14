@@ -10,19 +10,33 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.sun.javafx.event.EventHandlerManager;
+import com.sun.javafx.scene.control.skin.ListViewSkin;
+import com.sun.javafx.scene.control.skin.TableViewSkin;
+
 import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventDispatchChain;
+import javafx.event.EventDispatcher;
 import javafx.event.EventHandler;
+import javafx.event.EventTarget;
+import javafx.geometry.Bounds;
+import javafx.scene.control.Cell;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.Skin;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellEditEvent;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
@@ -132,6 +146,90 @@ public class TaskTable extends TableView<TaskModel> {
 		}));
 		addMenu();
 		loadData();
+		setRowFactory(new Callback<TableView<TaskModel>, TableRow<TaskModel>>() {
+			@Override
+			public TableRow<TaskModel> call(TableView<TaskModel> tableView) {
+				final TableRow<TaskModel> row = new TableRow<TaskModel>() {
+					@Override
+					protected void updateItem(TaskModel item, boolean empty) {
+						super.updateItem(item, empty);
+						if (!empty) {
+							setContextMenu(item.getMenu());
+						}
+					}
+				};
+				return row;
+			}
+		});
+
+	}
+
+	@Override
+	public EventDispatchChain buildEventDispatchChain(EventDispatchChain eventDispatchChain) {
+		if (getSkin() instanceof EventTarget) {
+			eventDispatchChain = ((EventTarget) getSkin()).buildEventDispatchChain(eventDispatchChain);
+		}
+		return super.buildEventDispatchChain(eventDispatchChain);
+	}
+
+	@Override
+	protected Skin<?> createDefaultSkin() {
+		return new TableViewCSkin<>(this);
+	}
+
+	private static class TableViewCSkin<T> extends TableViewSkin<T> implements EventTarget {
+		private ContextMenuEventDispatcher contextHandler = new ContextMenuEventDispatcher(
+				new EventHandlerManager(this));
+
+		@Override
+		public EventDispatchChain buildEventDispatchChain(EventDispatchChain tail) {
+			int focused = getSkinnable().getFocusModel().getFocusedIndex();
+			Cell cell = null;
+			if (focused > -1) {
+				cell = flow.getCell(focused);
+				tail = cell.buildEventDispatchChain(tail);
+			}
+			contextHandler.setTargetCell(cell);
+			return tail.prepend(contextHandler);
+		}
+
+		public TableViewCSkin(TableView<T> tableView) {
+			super(tableView);
+		}
+
+	}
+
+	private static class ContextMenuEventDispatcher implements EventDispatcher {
+		private EventDispatcher delegate;
+		private Cell<?> targetCell;
+
+		public ContextMenuEventDispatcher(EventDispatcher delegate) {
+			this.delegate = delegate;
+		}
+
+		public void setTargetCell(Cell<?> cell) {
+			this.targetCell = cell;
+		}
+
+		@Override
+		public Event dispatchEvent(Event event, EventDispatchChain tail) {
+			event = handleContextMenuEvent(event);
+			return delegate.dispatchEvent(event, tail);
+		}
+
+		private Event handleContextMenuEvent(Event event) {
+			if (!(event instanceof ContextMenuEvent) || targetCell == null)
+				return event;
+			ContextMenuEvent cme = (ContextMenuEvent) event;
+			if (!cme.isKeyboardTrigger())
+				return event;
+			final Bounds bounds = targetCell.localToScreen(targetCell.getBoundsInLocal());
+			double x2 = bounds.getMinX() + bounds.getWidth() / 4;
+			double y2 = bounds.getMinY() + bounds.getHeight() / 2;
+			ContextMenuEvent toCell = new ContextMenuEvent(ContextMenuEvent.CONTEXT_MENU_REQUESTED, 0, 0, x2, y2, true,
+					null);
+			return toCell;
+		}
 	}
 
 	private void addMenu() {
@@ -160,6 +258,7 @@ public class TaskTable extends TableView<TaskModel> {
 				deleteRow();
 			}
 		});
+
 		setContextMenu(new ContextMenu(newRow, copyRow, deleteRow));
 	}
 
@@ -215,4 +314,5 @@ public class TaskTable extends TableView<TaskModel> {
 		content.putString(stringBuilder.toString());
 		clipboard.setContent(content);
 	}
+	
 }

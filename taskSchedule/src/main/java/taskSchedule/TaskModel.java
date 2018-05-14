@@ -9,10 +9,18 @@ import javafx.animation.Timeline;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.HBox;
+import javafx.scene.shape.Circle;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 import javafx.util.converter.NumberStringConverter;
@@ -70,6 +78,37 @@ public class TaskModel {
 		});
 		actions.getChildren().addAll(actionButton, resetButton);
 		actions.setSpacing(5);
+	}
+
+	public ContextMenu getMenu() {
+		MenuItem newRow = new MenuItem("New");
+		newRow.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				System.out.println(newRow.getText());
+			}
+		});
+		MenuItem copyRow = new MenuItem("Copy");
+		copyRow.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent event) {
+				System.out.println(copyRow.getText());
+			}
+		});
+		MenuItem deleteRow = new MenuItem("Delete");
+		deleteRow.setGraphic(new Circle(5));
+
+		deleteRow.setOnAction(new EventHandler<ActionEvent>() {
+
+			@Override
+			public void handle(ActionEvent event) {
+				System.out.println(deleteRow.getText());
+			}
+		});
+
+		ContextMenu contextMenu = new ContextMenu(newRow, copyRow, deleteRow);
+		contextMenu.setStyle("-fx-min-width: 150;");
+		return contextMenu;
 	}
 
 	public HBox getTimeView() {

@@ -40,6 +40,7 @@ import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.shape.Circle;
 import javafx.util.Callback;
 
 public class TaskTable extends TableView<TaskModel> {
@@ -155,9 +156,11 @@ public class TaskTable extends TableView<TaskModel> {
 						super.updateItem(item, empty);
 						if (!empty) {
 							setContextMenu(item.getMenu());
+
 						}
 					}
 				};
+
 				return row;
 			}
 		});
